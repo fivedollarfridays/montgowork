@@ -2,7 +2,10 @@
 
 import pytest
 
+STUB = pytest.mark.skip(reason="stub — not yet implemented")
 
+
+@STUB
 class TestCreditFilter:
     def test_high_severity_flags_background_check_jobs(self):
         raise NotImplementedError("Vinny implements this")
@@ -14,6 +17,7 @@ class TestCreditFilter:
         raise NotImplementedError("Vinny implements this")
 
 
+@STUB
 class TestTransitFilter:
     def test_filters_by_route_accessibility(self):
         raise NotImplementedError("Vinny implements this")
@@ -25,11 +29,13 @@ class TestTransitFilter:
         raise NotImplementedError("Vinny implements this")
 
 
+@STUB
 class TestChildcareFilter:
     def test_filters_by_proximity_to_home_and_work(self):
         raise NotImplementedError("Vinny implements this")
 
 
+@STUB
 class TestCertificationRenewal:
     def test_parses_cna_from_work_history(self):
         raise NotImplementedError("Vinny implements this")

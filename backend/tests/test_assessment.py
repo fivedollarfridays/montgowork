@@ -2,7 +2,10 @@
 
 import pytest
 
+STUB = pytest.mark.skip(reason="stub — not yet implemented")
 
+
+@STUB
 class TestAssessmentEndpoint:
     def test_valid_assessment_returns_profile(self):
         raise NotImplementedError("Vinny implements this")
