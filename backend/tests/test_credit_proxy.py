@@ -1,6 +1,6 @@
-"""Tests for credit proxy error handling."""
+"""Tests for credit proxy — error handling and success path."""
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 import pytest
@@ -66,3 +66,27 @@ class TestCreditProxyErrors:
             resp = await client.post("/api/credit/assess", json=VALID_PAYLOAD)
             assert resp.status_code == 502
             assert "network error" in resp.json()["detail"].lower()
+
+
+class TestCreditProxySuccess:
+    @pytest.mark.anyio
+    async def test_success_returns_api_response(self, client):
+        """200 from credit API should pass through the response body."""
+        credit_response = {
+            "barrier_severity": "medium",
+            "barrier_details": [{"type": "utilization", "severity": "medium"}],
+            "readiness": {"score": 45, "fico_score": 580, "score_band": "poor"},
+            "thresholds": [{"threshold_name": "fair", "threshold_score": 650}],
+            "dispute_pathway": {"steps": [], "total_estimated_days": 90},
+            "eligibility": [{"product_name": "auto loan", "status": "not_eligible"}],
+            "disclaimer": "This is not financial advice.",
+        }
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = credit_response
+
+        with patch("app.routes.credit.httpx.AsyncClient") as mock_cls:
+            _mock_httpx_client(mock_cls, return_value=mock_resp)
+            resp = await client.post("/api/credit/assess", json=VALID_PAYLOAD)
+            assert resp.status_code == 200
+            assert resp.json() == credit_response
