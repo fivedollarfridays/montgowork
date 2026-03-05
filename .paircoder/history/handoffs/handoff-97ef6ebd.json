@@ -1,0 +1,8 @@
+{
+  "version": "2.0",
+  "task_id": "T2.1",
+  "source_agent": "driver",
+  "target_agent": "reviewer",
+  "task_description": "[T2.1] Harden seed_database SQL construction",
+  "acceptance_criteria": [
+    

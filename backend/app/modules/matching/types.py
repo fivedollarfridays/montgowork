@@ -84,7 +84,7 @@ class JobMatch(BaseModel):
     source: Optional[str] = None
     transit_accessible: bool = False
     route: Optional[str] = None
-    credit_check_required: Optional[str] = "unknown"
+    credit_check_required: str = "unknown"
     eligible_now: bool = True
     eligible_after: Optional[str] = None
 

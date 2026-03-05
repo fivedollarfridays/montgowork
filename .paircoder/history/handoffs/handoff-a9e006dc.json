@@ -1,0 +1,8 @@
+{
+  "version": "2.0",
+  "task_id": "T1.7",
+  "source_agent": "driver",
+  "target_agent": "reviewer",
+  "task_description": "[T1.7] Verification + integration check",
+  "acceptance_criteria": [
+    

@@ -87,6 +87,22 @@ ALLOWED_COLUMNS = {
 
 JSON_FIELDS = {"services"}
 
+
+def _validate_seed_record(table: str, record: dict) -> dict:
+    """Validate and clean a seed record before SQL interpolation.
+
+    Raises ValueError if table is not in ALLOWED_COLUMNS.
+    Filters record to only allowed columns and serializes JSON fields.
+    """
+    if table not in ALLOWED_COLUMNS:
+        raise ValueError(f"Unknown seed table: {table!r}")
+    allowed = ALLOWED_COLUMNS[table]
+    clean = {k: v for k, v in record.items() if k in allowed}
+    for field in JSON_FIELDS:
+        if field in clean and isinstance(clean[field], (list, dict)):
+            clean[field] = json.dumps(clean[field])
+    return clean
+
 _engine = None
 _async_session_factory = None
 
@@ -143,12 +159,10 @@ async def seed_database(engine):
             data = json.loads(filepath.read_text())
             if not data:
                 continue
-            allowed = ALLOWED_COLUMNS.get(table, set())
             for record in data:
-                clean = {k: v for k, v in record.items() if k in allowed}
-                for field in JSON_FIELDS:
-                    if field in clean and isinstance(clean[field], (list, dict)):
-                        clean[field] = json.dumps(clean[field])
+                clean = _validate_seed_record(table, record)
+                if not clean:
+                    continue
                 columns = ", ".join(clean.keys())
                 placeholders = ", ".join(f":{k}" for k in clean.keys())
                 await conn.execute(

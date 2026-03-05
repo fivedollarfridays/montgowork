@@ -29,7 +29,9 @@ async def test_engine(tmp_path):
         echo=False,
     )
     old_engine = db_module._engine
+    old_factory = db_module._async_session_factory
     db_module._engine = engine
+    db_module._async_session_factory = None
 
     await init_db(engine)
 
@@ -37,6 +39,7 @@ async def test_engine(tmp_path):
 
     await engine.dispose()
     db_module._engine = old_engine
+    db_module._async_session_factory = old_factory
 
 
 @pytest.fixture

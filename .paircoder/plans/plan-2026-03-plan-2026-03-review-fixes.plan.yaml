@@ -1,0 +1,8 @@
+id: plan-2026-03-plan-2026-03-review-fixes
+title: 'Code review fixes: SQL hardening, credit proxy error handling, test fixture
+  cleanup'
+type: bugfix
+status: complete
+created_at: '2026-03-04T19:38:24.022221'
+skills:
+- planning-with-trello

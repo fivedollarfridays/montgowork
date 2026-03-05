@@ -1,6 +1,6 @@
 """Matching engine filters — Vinny implements these."""
 
-from app.modules.matching.types import UserProfile, Resource, JobMatch
+from app.modules.matching.types import Resource, JobMatch
 
 
 def apply_credit_filter(

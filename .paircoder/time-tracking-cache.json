@@ -55,10 +55,60 @@
     ],
     "total_seconds": 128.046381
   },
-  "_active": {
-    "task_id": "T1.7",
-    "timer_id": "local-20260304193155",
-    "description": "T1.7: Verification + integration check",
-    "start": "2026-03-04T19:31:55.231008"
+  "T1.7": {
+    "entries": [
+      {
+        "id": "local-20260304193155",
+        "task_id": "T1.7",
+        "description": "T1.7: Verification + integration check",
+        "start": "2026-03-04T19:31:55.231008",
+        "end": "2026-03-04T19:34:46.558303",
+        "duration_seconds": 171.327295,
+        "provider_id": null
+      }
+    ],
+    "total_seconds": 171.327295
+  },
+  "T2.1": {
+    "entries": [
+      {
+        "id": "local-20260304194236",
+        "task_id": "T2.1",
+        "description": "T2.1: Harden seed_database SQL construction",
+        "start": "2026-03-04T19:42:36.809873",
+        "end": "2026-03-04T19:44:24.229286",
+        "duration_seconds": 107.419413,
+        "provider_id": null
+      }
+    ],
+    "total_seconds": 107.419413
+  },
+  "T2.2": {
+    "entries": [
+      {
+        "id": "local-20260304194455",
+        "task_id": "T2.2",
+        "description": "T2.2: Harden credit proxy error handling",
+        "start": "2026-03-04T19:44:55.837672",
+        "end": "2026-03-04T19:46:33.428996",
+        "duration_seconds": 97.591324,
+        "provider_id": null
+      }
+    ],
+    "total_seconds": 97.591324
+  },
+  "T2.3": {
+    "entries": [
+      {
+        "id": "local-20260304194722",
+        "task_id": "T2.3",
+        "description": "T2.3: Fix test fixture + cleanup unused imports and types",
+        "start": "2026-03-04T19:47:22.057138",
+        "end": "2026-03-04T19:48:51.433093",
+        "duration_seconds": 89.375955,
+        "provider_id": null
+      }
+    ],
+    "total_seconds": 89.375955
   }
 }

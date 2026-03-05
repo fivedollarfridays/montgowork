@@ -13,13 +13,20 @@ from app.modules.credit.types import (
 router = APIRouter(prefix="/api/credit", tags=["credit"])
 
 
+def _check_credit_response(resp: httpx.Response) -> None:
+    """Raise HTTPException if the credit API returned a non-200 response."""
+    if resp.status_code == 200:
+        return
+    try:
+        detail = resp.json().get("detail", "Credit API error")
+    except Exception:
+        detail = f"Credit API error (HTTP {resp.status_code})"
+    raise HTTPException(status_code=resp.status_code, detail=detail)
+
+
 @router.post("/assess")
 async def assess_credit(profile: CreditProfileRequest) -> CreditAssessmentResult:
-    """Proxy to the credit assessment microservice.
-
-    Auto-derives score_band from current_score to prevent 422s.
-    Returns typed CreditAssessmentResult.
-    """
+    """Proxy to the credit assessment microservice."""
     settings = get_settings()
     payload = profile.model_dump()
     payload["score_band"] = score_to_band(profile.current_score)
@@ -39,9 +46,15 @@ async def assess_credit(profile: CreditProfileRequest) -> CreditAssessmentResult
             status_code=503,
             detail="Credit assessment service unavailable. Ensure it's running on the configured port.",
         )
-    if resp.status_code != 200:
+    except httpx.TimeoutException:
         raise HTTPException(
-            status_code=resp.status_code,
-            detail=resp.json().get("detail", "Credit API error"),
+            status_code=504,
+            detail="Credit assessment service timed out. Try again later.",
         )
+    except httpx.HTTPError:
+        raise HTTPException(
+            status_code=502,
+            detail="Credit assessment network error. Try again later.",
+        )
+    _check_credit_response(resp)
     return resp.json()

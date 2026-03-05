@@ -1,0 +1,8 @@
+{
+  "version": "2.0",
+  "task_id": "T2.3",
+  "source_agent": "driver",
+  "target_agent": "reviewer",
+  "task_description": "[T2.3] Fix test fixture + cleanup unused imports and types",
+  "acceptance_criteria": [
+    
