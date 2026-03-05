@@ -1,1 +1,49 @@
-[]
+[
+  {
+    "name": "Montgomery OneAlabama — 2-1-1 Helpline",
+    "category": "social_service",
+    "subcategory": "referral",
+    "phone": "211",
+    "url": "https://www.211connectsalabama.org",
+    "services": ["Resource referrals", "Emergency assistance", "Food assistance", "Housing assistance", "Utility assistance"],
+    "notes": "Call 2-1-1 for immediate connection to local resources. Available 24/7."
+  },
+  {
+    "name": "Alabama JOBS Program (DHR)",
+    "category": "social_service",
+    "subcategory": "employment",
+    "phone": "334-242-1310",
+    "eligibility": "TANF recipients",
+    "services": ["Job search assistance", "Transportation assistance", "Work experience placements", "Education support"],
+    "notes": "Mandatory for able-bodied TANF recipients. Provides transportation vouchers."
+  },
+  {
+    "name": "Montgomery Area Transit System (MATS) — The M",
+    "category": "social_service",
+    "subcategory": "transportation",
+    "address": "2318 West Fairview Avenue, Montgomery, AL 36108",
+    "phone": "334-262-7321",
+    "url": "https://www.montgomerytransit.com",
+    "services": ["Fixed-route bus service", "Paratransit", "Monthly passes"],
+    "notes": "31-day pass available at MATS office. No Sunday service. Download TransLoc app for real-time tracking."
+  },
+  {
+    "name": "Salvation Army — Montgomery",
+    "category": "social_service",
+    "subcategory": "emergency",
+    "address": "911 South Court Street, Montgomery, AL 36104",
+    "phone": "334-265-4681",
+    "services": ["Emergency shelter", "Food pantry", "Utility assistance", "Clothing", "Case management"],
+    "notes": "Walk-in for food pantry. Shelter requires intake appointment."
+  },
+  {
+    "name": "Montgomery Area Food Bank",
+    "category": "social_service",
+    "subcategory": "food",
+    "address": "521 Trade Center Street, Montgomery, AL 36108",
+    "phone": "334-263-3784",
+    "url": "https://www.montgomeryareafoodbank.org",
+    "services": ["Food distribution", "Mobile pantry", "SNAP application assistance"],
+    "notes": "Mobile pantry schedule varies. Call for distribution times and locations."
+  }
+]

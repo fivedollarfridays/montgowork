@@ -1,0 +1,8 @@
+{
+  "version": "2.0",
+  "task_id": "T1.2",
+  "source_agent": "driver",
+  "target_agent": "reviewer",
+  "task_description": "[T1.2] SQLite schema + seed data loader",
+  "acceptance_criteria": [
+    

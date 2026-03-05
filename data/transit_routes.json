@@ -1,1 +1,16 @@
-[]
+[
+  {"route_number": 1, "route_name": "Day Street", "weekday_start": "05:15", "weekday_end": "20:45", "saturday": true, "sunday": false},
+  {"route_number": 2, "route_name": "Capitol Heights", "weekday_start": "05:15", "weekday_end": "20:45", "saturday": true, "sunday": false},
+  {"route_number": 3, "route_name": "McGehee Road", "weekday_start": "05:30", "weekday_end": "20:30", "saturday": true, "sunday": false},
+  {"route_number": 4, "route_name": "Perry Hill", "weekday_start": "05:30", "weekday_end": "20:30", "saturday": true, "sunday": false},
+  {"route_number": 5, "route_name": "Mobile Highway", "weekday_start": "05:00", "weekday_end": "21:00", "saturday": true, "sunday": false},
+  {"route_number": 6, "route_name": "East South Boulevard", "weekday_start": "05:15", "weekday_end": "20:45", "saturday": true, "sunday": false},
+  {"route_number": 7, "route_name": "Troy Highway", "weekday_start": "05:00", "weekday_end": "21:00", "saturday": true, "sunday": false},
+  {"route_number": 8, "route_name": "Norman Bridge", "weekday_start": "05:30", "weekday_end": "20:30", "saturday": true, "sunday": false},
+  {"route_number": 9, "route_name": "Rosa Parks", "weekday_start": "05:15", "weekday_end": "20:45", "saturday": true, "sunday": false},
+  {"route_number": 10, "route_name": "Eastern Boulevard", "weekday_start": "05:30", "weekday_end": "20:30", "saturday": true, "sunday": false},
+  {"route_number": 11, "route_name": "Narrow Lane", "weekday_start": "05:30", "weekday_end": "20:30", "saturday": true, "sunday": false},
+  {"route_number": 12, "route_name": "Fairview", "weekday_start": "05:30", "weekday_end": "20:30", "saturday": true, "sunday": false},
+  {"route_number": 13, "route_name": "Carter Hill", "weekday_start": "05:30", "weekday_end": "20:30", "saturday": true, "sunday": false},
+  {"route_number": 14, "route_name": "North Montgomery", "weekday_start": "05:30", "weekday_end": "20:30", "saturday": true, "sunday": false}
+]

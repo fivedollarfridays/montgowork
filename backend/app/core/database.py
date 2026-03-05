@@ -1,15 +1,91 @@
-"""Async SQLAlchemy database setup for SQLite."""
+"""Async SQLAlchemy database setup for SQLite with raw DDL and seed data."""
 
+import json
+from pathlib import Path
+
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase
 
 from app.core.config import get_settings
 
+# From backend/app/core/database.py -> 4 parents up to project root
+DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data"
 
-class Base(DeclarativeBase):
-    """Base class for all SQLAlchemy models."""
-    pass
+DDL_SQL = """
+CREATE TABLE IF NOT EXISTS employers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    address TEXT,
+    lat REAL,
+    lng REAL,
+    license_type TEXT,
+    industry TEXT,
+    active INTEGER DEFAULT 1
+);
+CREATE TABLE IF NOT EXISTS transit_routes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    route_number INTEGER NOT NULL,
+    route_name TEXT NOT NULL,
+    weekday_start TEXT,
+    weekday_end TEXT,
+    saturday INTEGER DEFAULT 1,
+    sunday INTEGER DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS transit_stops (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    route_id INTEGER REFERENCES transit_routes(id),
+    stop_name TEXT NOT NULL,
+    lat REAL NOT NULL,
+    lng REAL NOT NULL,
+    sequence INTEGER
+);
+CREATE TABLE IF NOT EXISTS resources (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    subcategory TEXT,
+    address TEXT,
+    lat REAL,
+    lng REAL,
+    phone TEXT,
+    url TEXT,
+    eligibility TEXT,
+    services TEXT,
+    hours TEXT,
+    notes TEXT
+);
+CREATE TABLE IF NOT EXISTS job_listings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    company TEXT,
+    location TEXT,
+    description TEXT,
+    url TEXT,
+    source TEXT,
+    scraped_at TEXT NOT NULL,
+    expires_at TEXT
+);
+CREATE TABLE IF NOT EXISTS sessions (
+    id TEXT PRIMARY KEY,
+    created_at TEXT NOT NULL,
+    barriers TEXT NOT NULL,
+    credit_profile TEXT,
+    qualifications TEXT,
+    plan TEXT,
+    expires_at TEXT NOT NULL
+);
+"""
 
+ALLOWED_COLUMNS = {
+    "employers": {"name", "address", "lat", "lng", "license_type", "industry", "active"},
+    "transit_routes": {"route_number", "route_name", "weekday_start", "weekday_end", "saturday", "sunday"},
+    "resources": {
+        "name", "category", "subcategory", "address", "lat", "lng",
+        "phone", "url", "eligibility", "services", "hours", "notes",
+    },
+}
+
+JSON_FIELDS = {"services"}
 
 _engine = None
 _async_session_factory = None
@@ -43,11 +119,54 @@ async def get_db() -> AsyncSession:
         yield session
 
 
-async def init_db() -> None:
-    """Initialize the database by creating all tables."""
-    engine = get_engine()
+async def init_db(engine):
+    """Create tables via raw DDL, then seed with Montgomery data."""
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        for statement in DDL_SQL.strip().split(";"):
+            statement = statement.strip()
+            if statement:
+                await conn.execute(text(statement))
+    await seed_database(engine)
+
+
+async def seed_database(engine):
+    """Load Montgomery JSON data into SQLite on first run."""
+    async with engine.begin() as conn:
+        result = await conn.execute(text("SELECT COUNT(*) FROM resources"))
+        if result.scalar() > 0:
+            return
+
+        for filename, table in _seed_file_map():
+            filepath = DATA_DIR / filename
+            if not filepath.exists():
+                continue
+            data = json.loads(filepath.read_text())
+            if not data:
+                continue
+            allowed = ALLOWED_COLUMNS.get(table, set())
+            for record in data:
+                clean = {k: v for k, v in record.items() if k in allowed}
+                for field in JSON_FIELDS:
+                    if field in clean and isinstance(clean[field], (list, dict)):
+                        clean[field] = json.dumps(clean[field])
+                columns = ", ".join(clean.keys())
+                placeholders = ", ".join(f":{k}" for k in clean.keys())
+                await conn.execute(
+                    text(f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"),
+                    clean,
+                )
+
+
+def _seed_file_map():
+    """Return (filename, table) pairs for seeding."""
+    return [
+        ("montgomery_businesses.json", "employers"),
+        ("transit_routes.json", "transit_routes"),
+        ("career_centers.json", "resources"),
+        ("training_programs.json", "resources"),
+        ("childcare_providers.json", "resources"),
+        ("community_resources.json", "resources"),
+    ]
 
 
 async def close_db() -> None:

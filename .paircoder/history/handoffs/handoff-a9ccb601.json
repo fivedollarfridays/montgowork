@@ -1,0 +1,8 @@
+{
+  "version": "2.0",
+  "task_id": "T1.6",
+  "source_agent": "driver",
+  "target_agent": "reviewer",
+  "task_description": "[T1.6] Test infrastructure (conftest + test stubs)",
+  "acceptance_criteria": [
+    

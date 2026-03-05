@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "name": "Montgomery Career Center (Comprehensive)",
+    "category": "career_center",
+    "subcategory": "comprehensive",
+    "address": "1060 East South Boulevard, Montgomery, AL 36116",
+    "phone": "334-286-1746",
+    "url": "https://www.madeinalabama.com/career-centers/",
+    "eligibility": "Open to all Montgomery residents, no appointment needed",
+    "services": ["Job search assistance", "Resume writing", "Interview preparation", "Career counseling", "Workshops", "Computer access", "WIOA enrollment", "Veterans services"],
+    "hours": "Mon-Fri 8am-5pm",
+    "notes": "Ask for referrals to specialized programs. WIOA funding can cover training costs."
+  }
+]

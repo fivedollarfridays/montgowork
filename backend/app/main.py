@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
+from app.core.database import get_engine, init_db
 from app.core.exception_handlers import register_exception_handlers
 from app.core.logging import configure_logging
 from app.health import router as health_router
@@ -25,6 +26,8 @@ configure_logging()
 async def lifespan(app: FastAPI):
     """Manage application lifespan."""
     logger.info("MontGoWork API starting up")
+    engine = get_engine()
+    await init_db(engine)
     yield
     logger.info("MontGoWork API shutting down")
 

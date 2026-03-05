@@ -1,0 +1,64 @@
+{
+  "T1.1": {
+    "entries": [
+      {
+        "id": "local-20260304191158",
+        "task_id": "T1.1",
+        "description": "T1.1: Pydantic type modules (all 6 files)",
+        "start": "2026-03-04T19:11:58.484762",
+        "end": "2026-03-04T19:15:18.520826",
+        "duration_seconds": 200.036064,
+        "provider_id": null
+      }
+    ],
+    "total_seconds": 200.036064
+  },
+  "T1.2": {
+    "entries": [
+      {
+        "id": "local-20260304191837",
+        "task_id": "T1.2",
+        "description": "T1.2: SQLite schema + seed data loader",
+        "start": "2026-03-04T19:18:37.784368",
+        "end": "2026-03-04T19:20:42.522402",
+        "duration_seconds": 124.738034,
+        "provider_id": null
+      }
+    ],
+    "total_seconds": 124.738034
+  },
+  "T1.5": {
+    "entries": [
+      {
+        "id": "local-20260304192059",
+        "task_id": "T1.5",
+        "description": "T1.5: Route stubs + credit proxy",
+        "start": "2026-03-04T19:20:59.220920",
+        "end": "2026-03-04T19:25:57.741468",
+        "duration_seconds": 298.520548,
+        "provider_id": null
+      }
+    ],
+    "total_seconds": 298.520548
+  },
+  "T1.6": {
+    "entries": [
+      {
+        "id": "local-20260304192901",
+        "task_id": "T1.6",
+        "description": "T1.6: Test infrastructure (conftest + test stubs)",
+        "start": "2026-03-04T19:29:01.892608",
+        "end": "2026-03-04T19:31:09.938989",
+        "duration_seconds": 128.046381,
+        "provider_id": null
+      }
+    ],
+    "total_seconds": 128.046381
+  },
+  "_active": {
+    "task_id": "T1.7",
+    "timer_id": "local-20260304193155",
+    "description": "T1.7: Verification + integration check",
+    "start": "2026-03-04T19:31:55.231008"
+  }
+}

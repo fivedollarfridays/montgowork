@@ -1,1 +1,44 @@
-[]
+[
+  {
+    "name": "Montgomery Regional Workforce Training Center (MRWTC)",
+    "category": "training",
+    "subcategory": "healthcare",
+    "address": "1095 East South Boulevard, Montgomery, AL 36116",
+    "phone": "334-420-4560",
+    "url": "https://www.mrwtc.org",
+    "eligibility": "Montgomery area residents, some programs require GED/diploma",
+    "services": ["CNA certification", "Phlebotomy", "EKG Technician", "Patient Care Technician", "CDL training", "Welding", "Electrical"],
+    "notes": "Healthcare re-certification programs available. WIOA funding accepted."
+  },
+  {
+    "name": "Alabama Industrial Development Training (AIDT)",
+    "category": "training",
+    "subcategory": "manufacturing",
+    "address": "One Technology Court, Montgomery, AL 36116",
+    "phone": "334-280-4400",
+    "url": "https://www.aidt.edu",
+    "eligibility": "Alabama residents",
+    "services": ["Manufacturing skills", "Industrial maintenance", "Robotics", "Lean manufacturing", "Safety certifications"],
+    "notes": "Free training for qualifying employers. Partners with Hyundai, GE Aviation."
+  },
+  {
+    "name": "Trenholm State Community College",
+    "category": "training",
+    "subcategory": "general",
+    "address": "1225 Air Base Boulevard, Montgomery, AL 36108",
+    "phone": "334-420-4200",
+    "url": "https://www.trenholmstate.edu",
+    "eligibility": "Open enrollment",
+    "services": ["GED preparation", "Nursing", "Automotive technology", "Business administration", "Computer science", "Cosmetology"],
+    "notes": "Pell Grant eligible. Short-term workforce certificates available."
+  },
+  {
+    "name": "MPACT — Montgomery Preparedness and Career Training",
+    "category": "training",
+    "subcategory": "reentry",
+    "address": "Montgomery, AL",
+    "eligibility": "Returning citizens, justice-involved individuals",
+    "services": ["Job readiness", "Life skills", "Mentoring", "Employer connections", "Support services"],
+    "notes": "Specifically designed for formerly incarcerated individuals re-entering the workforce."
+  }
+]
