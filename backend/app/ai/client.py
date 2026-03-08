@@ -1,12 +1,15 @@
-"""Claude API client for generating plan narratives."""
+"""Multi-provider LLM client for generating plan narratives.
+
+Supports: anthropic (default) | openai | gemini | mock
+Controlled via LLM_PROVIDER env var.
+"""
 
 import json
 import logging
 
-from anthropic import AsyncAnthropic
-
 from app.ai.prompts import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
 from app.ai.types import PlanNarrative
+from app.barrier_intel.llm_client import _PROVIDERS, _resolve_provider
 from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -17,34 +20,141 @@ async def generate_narrative(
     qualifications: str,
     plan_data: dict,
 ) -> PlanNarrative:
-    """Call Claude API to generate a personalized plan narrative.
+    """Call configured LLM API to generate a personalized plan narrative.
 
-    Raises anthropic errors (APITimeoutError, etc.) to the caller.
+    Raises provider errors to the caller.
     """
+    from app.barrier_intel.llm_client import _PROVIDERS, _resolve_provider
+    from app.core.config import get_settings
+    
     settings = get_settings()
-    client = AsyncAnthropic(api_key=settings.anthropic_api_key)
-
+    configured = settings.llm_provider
+    resolved = _resolve_provider(settings, configured)
+    
     user_prompt = USER_PROMPT_TEMPLATE.format(
         barriers=", ".join(barriers),
         qualifications=qualifications,
         plan_data=json.dumps(plan_data, default=str),
     )
 
+    # Use non-streaming approach for JSON reliability
+    if resolved == "anthropic":
+        return await _generate_anthropic_narrative(user_prompt)
+    elif resolved == "openai":
+        return await _generate_openai_narrative(user_prompt)
+    elif resolved == "gemini":
+        return await _generate_gemini_narrative(user_prompt)
+    else:  # mock
+        return build_fallback_narrative(barriers, qualifications, plan_data)
+
+
+async def _generate_anthropic_narrative(user_prompt: str) -> PlanNarrative:
+    """Generate narrative using Anthropic (non-streaming)."""
+    from anthropic import AsyncAnthropic
+    from app.core.config import get_settings
+    
+    settings = get_settings()
+    client = AsyncAnthropic(api_key=settings.anthropic_api_key)
+    
     message = await client.messages.create(
         model=settings.claude_model,
         max_tokens=1024,
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": user_prompt}],
     )
-
+    
     if not message.content:
-        raise ValueError("Claude returned empty response")
-    raw = message.content[0].text
+        raise ValueError("Anthropic returned empty response")
+    
+    raw_response = message.content[0].text
+    return _parse_narrative_response(raw_response)
+
+
+async def _generate_openai_narrative(user_prompt: str) -> PlanNarrative:
+    """Generate narrative using OpenAI (non-streaming)."""
+    from openai import AsyncOpenAI
+    from app.core.config import get_settings
+    
+    settings = get_settings()
+    client = AsyncOpenAI(api_key=settings.openai_api_key)
+    
+    response = await client.chat.completions.create(
+        model=settings.openai_model,
+        max_tokens=1024,
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_prompt},
+        ],
+    )
+    
+    if not response.choices or not response.choices[0].message.content:
+        raise ValueError("OpenAI returned empty response")
+    
+    raw_response = response.choices[0].message.content
+    return _parse_narrative_response(raw_response)
+
+
+async def _generate_gemini_narrative(user_prompt: str) -> PlanNarrative:
+    """Generate narrative using Gemini (non-streaming)."""
+    from google import genai
+    from google.genai import types
+    from app.core.config import get_settings
+    
+    settings = get_settings()
+    client = genai.Client(api_key=settings.gemini_api_key)
+    config = types.GenerateContentConfig(
+        system_instruction=SYSTEM_PROMPT,
+        max_output_tokens=1024,
+    )
+    
+    response = await client.aio.models.generate_content(
+        model=settings.gemini_model,
+        contents=user_prompt,
+        config=config,
+    )
+    
+    if not response.text:
+        raise ValueError("Gemini returned empty response")
+    
+    raw_response = response.text
+    return _parse_narrative_response(raw_response)
+
+
+def _parse_narrative_response(raw_response: str) -> PlanNarrative:
+    """Parse and clean LLM response into PlanNarrative."""
+    if not raw_response:
+        raise ValueError("LLM returned empty response")
+    
+    # Handle JSON wrapped in markdown code blocks (common with Gemini)
+    cleaned = raw_response.strip()
+    if cleaned.startswith("```json"):
+        cleaned = cleaned[7:]  # Remove ```json
+    if cleaned.startswith("```"):
+        cleaned = cleaned[3:]   # Remove ```
+    if cleaned.endswith("```"):
+        cleaned = cleaned[:-3]  # Remove trailing ```
+    cleaned = cleaned.strip()
+    
     try:
-        parsed = json.loads(raw)
+        parsed = json.loads(cleaned)
     except json.JSONDecodeError as exc:
-        logger.warning("Claude returned invalid JSON (length=%d)", len(raw))
-        raise ValueError("Claude returned invalid JSON") from exc
+        logger.warning("LLM returned invalid JSON (length=%d): %s", len(cleaned), cleaned[:200])
+        
+        # Try to fix common JSON issues
+        try:
+            # Attempt to fix truncated JSON by finding the last complete object
+            if cleaned.count('{') > cleaned.count('}'):
+                # Find the position of the last complete JSON object
+                last_complete = cleaned.rfind('}')
+                if last_complete > 0:
+                    fixed = cleaned[:last_complete + 1]
+                    parsed = json.loads(fixed)
+                    logger.info("Fixed truncated JSON response")
+                    return PlanNarrative(**parsed)
+        except:
+            pass
+            
+        raise ValueError("LLM returned invalid JSON") from exc
     return PlanNarrative(**parsed)
 
 
