@@ -123,9 +123,10 @@ class TestLifespan:
         assert not any("WEB_CONCURRENCY" in c for c in warning_calls)
 
     @pytest.mark.anyio
-    async def test_warns_on_missing_anthropic_key(self):
-        """Lifespan logs warning when ANTHROPIC_API_KEY is not set."""
+    async def test_warns_on_missing_provider_key(self):
+        """Lifespan logs warning when the configured provider's API key is missing."""
         from app.main import lifespan, app
+        from unittest.mock import MagicMock
 
         mock_engine = AsyncMock()
         mock_settings = patch("app.main.get_settings")
@@ -135,9 +136,15 @@ class TestLifespan:
              patch("app.main.close_db", new_callable=AsyncMock), \
              patch("app.main.upsert_barrier_graph", new_callable=AsyncMock), \
              patch("app.main.logger") as mock_logger:
-            ms.return_value.anthropic_api_key = ""
+            cfg = MagicMock()
+            cfg.llm_provider = "anthropic"
+            cfg.anthropic_api_key = ""
+            cfg.web_concurrency = "1"
+            cfg.environment = "development"
+            ms.return_value = cfg
             async with lifespan(app):
                 pass
-        mock_logger.warning.assert_any_call(
-            "ANTHROPIC_API_KEY is not set \u2014 AI narrative will use fallback"
-        )
+        # Warning should name the missing env var and the provider
+        warning_calls = " ".join(str(c) for c in mock_logger.warning.call_args_list)
+        assert "ANTHROPIC_API_KEY" in warning_calls
+        assert "mock" in warning_calls

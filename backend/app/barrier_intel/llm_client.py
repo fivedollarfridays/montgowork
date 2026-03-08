@@ -1,13 +1,28 @@
 """Provider-agnostic LLM streaming client factory.
 
-Supports: anthropic (default) | openai | gemini
+Supports: anthropic (default) | openai | gemini | mock
 Controlled via LLM_PROVIDER env var.
+
+If the configured provider's API key is missing, automatically falls back to
+the mock provider and logs a WARNING — no crash, zero-config local dev works.
 """
+
+import asyncio
+import logging
 
 from anthropic import AsyncAnthropic
 
 from app.barrier_intel.prompts import SYSTEM_PROMPT
 from app.core.config import get_settings
+
+logger = logging.getLogger(__name__)
+
+# Maps provider name → (key getter, env var name)
+_KEY_MAP: dict[str, tuple] = {
+    "anthropic": (lambda s: s.anthropic_api_key, "ANTHROPIC_API_KEY"),
+    "openai":    (lambda s: s.openai_api_key,    "OPENAI_API_KEY"),
+    "gemini":    (lambda s: s.gemini_api_key,    "GEMINI_API_KEY"),
+}
 
 
 async def _anthropic_stream(prompt: str):
@@ -70,33 +85,55 @@ async def _gemini_stream(prompt: str):
     yield "", 0, 0
 
 
+async def _mock_stream(prompt: str):
+    """Mock LLM provider — works without any API key (local dev / CI)."""
+    mock_response = (
+        "I'm a mock LLM response. The system is working correctly, but I don't have access to "
+        "real AI capabilities without an API key. The barrier intelligence system architecture "
+        "is functioning properly - you can see this message because the streaming mechanism "
+        "is working. To get actual AI responses, please configure a valid API key for one of "
+        "the supported providers (anthropic, openai, or gemini)."
+    )
+    for word in mock_response.split():
+        yield word + " ", 0, 0
+        await asyncio.sleep(0.05)
+    yield "", 50, 100
+
+
 _PROVIDERS = {
     "anthropic": _anthropic_stream,
-    "openai": _openai_stream,
-    "gemini": _gemini_stream,
+    "openai":    _openai_stream,
+    "gemini":    _gemini_stream,
+    "mock":      _mock_stream,
 }
 
 
-def get_llm_stream(prompt: str):
-    """Return the async generator for the configured LLM provider."""
-    settings = get_settings()
-    provider = settings.llm_provider
-    if provider not in _PROVIDERS:
+def _resolve_provider(settings, provider: str) -> str:
+    """Return the provider to use, falling back to mock if key is missing."""
+    if provider == "mock":
+        return "mock"
+    if provider not in _KEY_MAP:
         raise ValueError(
             f"Unknown LLM_PROVIDER '{provider}'. Choose: {', '.join(_PROVIDERS)}"
         )
-    _validate_key(settings, provider)
-    return _PROVIDERS[provider](prompt)
-
-
-def _validate_key(settings, provider: str) -> None:
-    keys = {
-        "anthropic": settings.anthropic_api_key,
-        "openai": settings.openai_api_key,
-        "gemini": settings.gemini_api_key,
-    }
-    if not keys[provider]:
-        raise ValueError(
-            f"LLM_PROVIDER is '{provider}' but the corresponding API key is not set. "
-            f"Set {'ANTHROPIC_API_KEY' if provider == 'anthropic' else provider.upper() + '_API_KEY'} in your .env"
+    key_getter, env_var = _KEY_MAP[provider]
+    if not key_getter(settings):
+        logger.warning(
+            "%s is not set — LLM_PROVIDER='%s' will fall back to mock responses. "
+            "Set %s in your .env to use the real provider.",
+            env_var, provider, env_var,
         )
+        return "mock"
+    return provider
+
+
+def get_llm_stream(prompt: str):
+    """Return the async generator for the configured (or resolved) LLM provider."""
+    settings = get_settings()
+    configured = settings.llm_provider
+    if configured not in _PROVIDERS:
+        raise ValueError(
+            f"Unknown LLM_PROVIDER '{configured}'. Choose: {', '.join(_PROVIDERS)}"
+        )
+    resolved = _resolve_provider(settings, configured)
+    return _PROVIDERS[resolved](prompt)

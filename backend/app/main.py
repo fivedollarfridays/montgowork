@@ -17,6 +17,25 @@ from app.routes import all_routers
 
 logger = logging.getLogger(__name__)
 
+_PROVIDER_KEY_MAP = {
+    "anthropic": ("anthropic_api_key", "ANTHROPIC_API_KEY"),
+    "openai":    ("openai_api_key",    "OPENAI_API_KEY"),
+    "gemini":    ("gemini_api_key",    "GEMINI_API_KEY"),
+}
+
+
+def _warn_if_llm_key_missing(settings) -> None:
+    provider = settings.llm_provider
+    if provider == "mock":
+        logger.info("LLM_PROVIDER=mock — using mock responses (no API key required)")
+        return
+    entry = _PROVIDER_KEY_MAP.get(provider)
+    if entry and not getattr(settings, entry[0], ""):
+        logger.warning(
+            "%s is not set — LLM_PROVIDER='%s' will fall back to mock responses",
+            entry[1], provider,
+        )
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -25,8 +44,7 @@ async def lifespan(app: FastAPI):
     configure_logging()
     logger.info("MontGoWork API starting up")
     settings = get_settings()
-    if not settings.anthropic_api_key:
-        logger.warning("ANTHROPIC_API_KEY is not set — AI narrative will use fallback")
+    _warn_if_llm_key_missing(settings)
     web_concurrency = os.environ.get("WEB_CONCURRENCY", "1")
     if web_concurrency.isdigit() and int(web_concurrency) > 1:
         logger.warning(

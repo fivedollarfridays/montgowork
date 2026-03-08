@@ -124,16 +124,6 @@ async def test_gemini_stream_yields_text():
     assert "Gemini reply" in results
 
 
-def test_missing_api_key_raises_value_error():
-    from app.barrier_intel.llm_client import get_llm_stream
-    from unittest.mock import patch
-
-    settings = _settings(llm_provider="openai", openai_api_key="")
-    with patch("app.barrier_intel.llm_client.get_settings", return_value=settings):
-        with pytest.raises(ValueError, match="OPENAI_API_KEY"):
-            get_llm_stream("test")
-
-
 def test_unknown_provider_raises_value_error():
     from app.barrier_intel.llm_client import get_llm_stream
     from unittest.mock import patch
@@ -142,3 +132,58 @@ def test_unknown_provider_raises_value_error():
     with patch("app.barrier_intel.llm_client.get_settings", return_value=settings):
         with pytest.raises(ValueError, match="Unknown LLM_PROVIDER"):
             get_llm_stream("test")
+
+
+# ---------------------------------------------------------------------------
+# T24.9: auto-fallback to mock when key missing
+# ---------------------------------------------------------------------------
+
+def test_missing_key_falls_back_to_mock_not_raises():
+    """Missing key should return mock stream, not raise ValueError."""
+    from app.barrier_intel.llm_client import get_llm_stream
+    from unittest.mock import patch
+
+    settings = _settings(llm_provider="openai", openai_api_key="")
+    with patch("app.barrier_intel.llm_client.get_settings", return_value=settings):
+        stream = get_llm_stream("test")
+    # Should return an async generator (mock), not raise
+    import inspect
+    assert inspect.isasyncgen(stream)
+
+
+def test_missing_key_fallback_logs_warning(caplog):
+    """Missing key fallback emits a WARNING naming the missing env var."""
+    import logging
+    from app.barrier_intel.llm_client import get_llm_stream
+    from unittest.mock import patch
+
+    settings = _settings(llm_provider="anthropic", anthropic_api_key="")
+    with patch("app.barrier_intel.llm_client.get_settings", return_value=settings):
+        with caplog.at_level(logging.WARNING, logger="app.barrier_intel.llm_client"):
+            get_llm_stream("test")
+
+    assert any("ANTHROPIC_API_KEY" in r.message for r in caplog.records)
+    assert any("mock" in r.message.lower() for r in caplog.records)
+
+
+def test_explicit_mock_provider_needs_no_key():
+    """LLM_PROVIDER=mock requires no API key."""
+    from app.barrier_intel.llm_client import get_llm_stream
+    from unittest.mock import patch
+    import inspect
+
+    settings = _settings(llm_provider="mock")
+    with patch("app.barrier_intel.llm_client.get_settings", return_value=settings):
+        stream = get_llm_stream("test")
+    assert inspect.isasyncgen(stream)
+
+
+def test_valid_key_bypasses_fallback():
+    """When a valid key is present, the real provider is selected (not mock)."""
+    from app.barrier_intel.llm_client import _resolve_provider
+    from unittest.mock import patch
+
+    settings = _settings(llm_provider="gemini", gemini_api_key="real-key")
+    with patch("app.barrier_intel.llm_client.get_settings", return_value=settings):
+        provider = _resolve_provider(settings, "gemini")
+    assert provider == "gemini"
