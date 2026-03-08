@@ -180,5 +180,19 @@
       }
     ],
     "total_seconds": 2137.289534
+  },
+  "T24.9": {
+    "entries": [
+      {
+        "id": "local-20260308122616",
+        "task_id": "T24.9",
+        "description": "T24.9: LLM provider-aware startup check + auto-fallback to mock",
+        "start": "2026-03-08T12:26:16.896172",
+        "end": "2026-03-08T12:32:02.235778",
+        "duration_seconds": 345.339606,
+        "provider_id": null
+      }
+    ],
+    "total_seconds": 345.339606
   }
 }

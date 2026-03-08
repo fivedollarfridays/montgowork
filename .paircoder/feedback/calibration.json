@@ -2,19 +2,19 @@
   "task_types": {
     "feature": {
       "task_type": "feature",
-      "sample_count": 13,
-      "avg_tokens": 7116.923076923076,
-      "std_dev": 8773.183953753081,
-      "p80_tokens": 14503.94396598317,
-      "avg_duration_seconds": 537.6153846153846,
+      "sample_count": 14,
+      "avg_tokens": 8102.999999999999,
+      "std_dev": 9171.232655895905,
+      "p80_tokens": 15825.177896264351,
+      "avg_duration_seconds": 1638.0714285714284,
       "success_rate": 1.0,
       "recommended_model": "haiku",
       "model": "aggregate",
       "recommended_effort": "high",
-      "_m2_tokens": 1000593836.9230771,
-      "_m2_duration": 11413445.076923076,
-      "estimation_mape": 755.3973646795297,
-      "estimation_sample_count": 13
+      "_m2_tokens": 1177561118.0000002,
+      "_m2_duration": 231816082.92857143,
+      "estimation_mape": 706.1538354354492,
+      "estimation_sample_count": 14
     },
     "feature:claude-opus-4-6": {
       "task_type": "feature",
@@ -66,21 +66,21 @@
     },
     "feature:claude-sonnet-4-6": {
       "task_type": "feature",
-      "sample_count": 6,
-      "avg_tokens": 11190.166666666668,
-      "std_dev": 11178.026248204802,
-      "p80_tokens": 20602.06476765511,
-      "avg_duration_seconds": 1002.8333333333333,
+      "sample_count": 7,
+      "avg_tokens": 12580.428571428572,
+      "std_dev": 10894.745835324775,
+      "p80_tokens": 21753.804564772032,
+      "avg_duration_seconds": 3137.2857142857138,
       "success_rate": 1.0,
       "recommended_model": "haiku",
       "model": "claude-sonnet-4-6",
       "recommended_effort": "high",
-      "_m2_tokens": 749689624.8333333,
-      "_m2_duration": 8930030.833333334,
-      "estimation_mape": 285.65201107156963,
-      "estimation_sample_count": 6
+      "_m2_tokens": 830868407.7142856,
+      "_m2_duration": 200277283.42857143,
+      "estimation_mape": 254.27143167026014,
+      "estimation_sample_count": 7
     }
   },
-  "last_calibrated": "2026-03-08T15:06:17.314335+00:00",
-  "total_records": 16
+  "last_calibrated": "2026-03-08T19:32:02.239237+00:00",
+  "total_records": 17
 }

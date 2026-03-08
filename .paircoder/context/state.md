@@ -51,7 +51,8 @@ Sprint 23: Barrier Graph + RAG — Barrier Intelligence Assistant. Adds graph-aw
 | T23.5 | LLM orchestration + guardrails: POST /api/barrier-intel/chat + SSE streaming | P0 | 70 | done | T23.4 |
 | T23.6 | Frontend: BarrierIntelChat + SSE streaming + explainability UI | P1 | 70 | done | T23.5 |
 | T23.7 | NFRs: caching, observability, rate limiting + eval suite | P2 | 55 | pending | T23.5, T23.6 |
-| T24.8 | Multi-provider LLM: Anthropic + OpenAI with env-based config | P1 | 35 | pending | T24.5 |
+| T24.8 | Multi-provider LLM: Anthropic + OpenAI + Gemini with env-based config | P1 | 35 | done | T24.5 |
+| T24.9 | LLM provider-aware startup check + auto-fallback to mock | P1 | 25 | done | T24.8 |
 
 **Total: 8 tasks, 440 complexity points (6/8 done)**
 
@@ -126,7 +127,13 @@ Sprint 23: Barrier Graph + RAG — Barrier Intelligence Assistant. Adds graph-aw
 
 ## What Was Just Done
 
-- **T24.8 done** (auto-updated by hook)
+### Sprint 24 T24.9 (2026-03-08) — LLM Provider-Aware Startup Check + Auto-Fallback to Mock
+
+- **T24.9** LLM auto-fallback: `_resolve_provider()` in `llm_client.py` returns "mock" + logs WARNING when key missing (replaces old `_validate_key()` crash). `_warn_if_llm_key_missing()` in `main.py` replaces Anthropic-only line 29 check — now handles whichever `LLM_PROVIDER` is configured and names the missing env var. `.env.example` documents `LLM_PROVIDER=mock` zero-config option. 4 new tests, 610 total passing.
+
+### Sprint 24 T24.8 (2026-03-08) — Multi-Provider LLM
+
+- **T24.8** Multi-provider LLM: Added `_openai_stream`, `_gemini_stream`, `_mock_stream` to `llm_client.py`. `LLM_PROVIDER` env var selects provider at runtime. `openai==1.109.1` and `google-genai==1.66.0` added to requirements. Settings extended with `openai_api_key`, `openai_model`, `gemini_api_key`, `gemini_model`. 8 new tests, 606 total passing.
 
 ### Sprint 24 T24.6 (2026-03-08) — Frontend BarrierIntelChat
 
@@ -240,8 +247,7 @@ Sprint 23: Barrier Graph + RAG — Barrier Intelligence Assistant. Adds graph-aw
 
 ## What's Next
 
-1. Start T24.8 (Multi-provider LLM: Anthropic + OpenAI) — unblocks contributors
-2. Start T24.7 (NFRs: caching, observability, rate limiting + eval suite)
+1. Start T24.7 (NFRs: caching, observability, rate limiting + eval suite) — last remaining Sprint 23/24 task
 
 
 ## Blockers
