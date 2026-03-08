@@ -1,8 +1,11 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
-import { ExternalLink, MapPin, Phone } from "lucide-react";
+import { useMemo, useState, type ReactNode } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ExternalLink, MapPin, Phone, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { generateNarrative } from "@/lib/api";
 import type { JobMatch, ReEntryPlan, UserProfile } from "@/lib/types";
 import { CAREER_CENTER, mapsUrl, safeHref } from "@/lib/constants";
 
@@ -84,10 +87,46 @@ interface MondayMorningProps {
   plan: ReEntryPlan;
   profile: UserProfile;
   firstStepAction?: ReactNode;
+  sessionId?: string;
+  token?: string;
 }
 
-export function MondayMorning({ plan, profile, firstStepAction }: MondayMorningProps) {
+export function MondayMorning({ plan, profile, firstStepAction, sessionId, token }: MondayMorningProps) {
   const steps = useMemo(() => buildSteps(plan), [plan]);
+  const queryClient = useQueryClient();
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const generateNarrativeMutation = useMutation({
+    mutationFn: () => {
+      if (!sessionId || !token) throw new Error("Session ID and token required");
+      return generateNarrative(sessionId, token);
+    },
+    onSuccess: (data) => {
+      // Update the plan data in the cache with the new resident_summary
+      queryClient.setQueryData(["plan", sessionId, token], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          plan: {
+            ...old.plan,
+            resident_summary: data.summary,
+          },
+        };
+      });
+    },
+    onError: (error) => {
+      console.error("Failed to generate narrative:", error);
+    },
+    onSettled: () => {
+      setIsGenerating(false);
+    },
+  });
+
+  const handleGenerateNarrative = () => {
+    if (!sessionId || !token) return;
+    setIsGenerating(true);
+    generateNarrativeMutation.mutate();
+  };
 
   return (
     <section className="space-y-8">
@@ -102,6 +141,41 @@ export function MondayMorning({ plan, profile, firstStepAction }: MondayMorningP
           )}
         </p>
       </div>
+
+      {/* AI-generated narrative */}
+      {plan.resident_summary ? (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="p-6">
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold text-primary">Your Personalized Plan Summary</h2>
+              <p className="text-sm leading-relaxed text-foreground">
+                {plan.resident_summary}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-dashed border-muted-foreground/30">
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h2 className="text-lg font-semibold text-foreground">Generate Your Personalized Summary</h2>
+                <p className="text-sm text-muted-foreground">
+                  Get an AI-powered narrative that explains your plan in a warm, encouraging way.
+                </p>
+              </div>
+              <Button 
+                onClick={handleGenerateNarrative}
+                disabled={isGenerating || !sessionId || !token}
+                className="w-full sm:w-auto"
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                {isGenerating ? "Generating..." : "Generate Summary"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div>
         <h2 className="text-xl font-semibold text-primary mb-4">Your Next Steps</h2>

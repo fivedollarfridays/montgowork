@@ -172,6 +172,8 @@ function PlanContent() {
       <MondayMorning
         plan={plan}
         profile={profile}
+        sessionId={sessionId}
+        token={token ?? undefined}
         firstStepAction={
           <CareerCenterExport sessionId={sessionId} token={token ?? undefined} />
         }
