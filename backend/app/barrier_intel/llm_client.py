@@ -87,13 +87,38 @@ async def _gemini_stream(prompt: str):
 
 async def _mock_stream(prompt: str):
     """Mock LLM provider — works without any API key (local dev / CI)."""
-    mock_response = (
-        "I'm a mock LLM response. The system is working correctly, but I don't have access to "
-        "real AI capabilities without an API key. The barrier intelligence system architecture "
-        "is functioning properly - you can see this message because the streaming mechanism "
-        "is working. To get actual AI responses, please configure a valid API key for one of "
-        "the supported providers (anthropic, openai, or gemini)."
-    )
+    # Extract context from prompt to provide relevant mock responses
+    if "explain_plan" in prompt:
+        mock_response = (
+            "Based on your assessment, your plan focuses on addressing your specific barriers step by step. "
+            "Each recommended action connects you with Montgomery resources that have helped others in similar situations. "
+            "The plan prioritizes removing obstacles first, then building toward stable employment."
+        )
+    elif "What should I do first" in prompt:
+        mock_response = (
+            "Start with the first step in your plan: visit the Alabama Career Center on Carter Hill Road. "
+            "They provide personalized guidance, help with resumes, and can connect you with employers "
+            "who are actively hiring in Montgomery."
+        )
+    elif "Why was this plan recommended" in prompt:
+        mock_response = (
+            "This plan was recommended because it matches your specific situation and local resources. "
+            "It addresses your barriers with proven Montgomery solutions while building toward jobs that fit "
+            "your experience and schedule."
+        )
+    elif "What's blocking me" in prompt:
+        mock_response = (
+            "Based on your assessment, your main barriers are transportation and childcare access. "
+            "These are common challenges in Montgomery, and there are specific local programs "
+            "designed to help with both."
+        )
+    else:
+        mock_response = (
+            "I'm here to help you understand your plan and connect with Montgomery resources. "
+            "Your plan includes specific steps, local contacts, and job matches that fit your situation. "
+            "Ask me anything about your plan or next steps!"
+        )
+    
     for word in mock_response.split():
         yield word + " ", 0, 0
         await asyncio.sleep(0.05)
