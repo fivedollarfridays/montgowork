@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MondayMorning } from "../MondayMorning";
 import type { ReEntryPlan, UserProfile } from "@/lib/types";
 import { AvailableHours, EmploymentStatus } from "@/lib/types";
@@ -35,16 +36,21 @@ const baseProfile: UserProfile = {
   target_industries: [],
 };
 
+function renderWithClient(ui: React.ReactElement) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+}
+
 describe("MondayMorning ARIA attributes", () => {
   it("renders the hero heading as h1", () => {
-    render(<MondayMorning plan={basePlan} profile={baseProfile} />);
+    renderWithClient(<MondayMorning plan={basePlan} profile={baseProfile} />);
     const heading = screen.getByRole("heading", { level: 1 });
     expect(heading).toBeInTheDocument();
     expect(heading.textContent).toMatch(/what you can do/i);
   });
 
   it("renders section element as landmark", () => {
-    const { container } = render(<MondayMorning plan={basePlan} profile={baseProfile} />);
+    const { container } = renderWithClient(<MondayMorning plan={basePlan} profile={baseProfile} />);
     expect(container.querySelector("section")).toBeInTheDocument();
   });
 });

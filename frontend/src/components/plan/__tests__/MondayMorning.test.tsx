@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MondayMorning } from "../MondayMorning";
 import type { ReEntryPlan, UserProfile } from "@/lib/types";
 import { AvailableHours, BarrierType, EmploymentStatus } from "@/lib/types";
@@ -36,12 +37,15 @@ const baseProfile: UserProfile = {
 };
 
 function renderMondayMorning(overrides?: Partial<Parameters<typeof MondayMorning>[0]>) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
-    <MondayMorning
-      plan={basePlan}
-      profile={baseProfile}
-      {...overrides}
-    />
+    <QueryClientProvider client={queryClient}>
+      <MondayMorning
+        plan={basePlan}
+        profile={baseProfile}
+        {...overrides}
+      />
+    </QueryClientProvider>
   );
 }
 
@@ -210,6 +214,29 @@ describe("MondayMorning map links", () => {
     expect(mapLinks[0].getAttribute("href")).toContain(
       encodeURIComponent("100 Main St, Montgomery, AL")
     );
+  });
+});
+
+describe("MondayMorning AI narrative", () => {
+  it("displays resident_summary when present", () => {
+    const planWithSummary: ReEntryPlan = {
+      ...basePlan,
+      resident_summary: "Your plan starts at the Alabama Career Center.",
+    };
+    renderMondayMorning({ plan: planWithSummary });
+    expect(screen.getByText("Your plan starts at the Alabama Career Center.")).toBeInTheDocument();
+    expect(screen.getByText(/Your Personalized Plan Summary/i)).toBeInTheDocument();
+  });
+
+  it("shows generate button when no resident_summary and sessionId provided", () => {
+    renderMondayMorning({ plan: basePlan, sessionId: "sess-123", token: "tok-abc" });
+    expect(screen.getByRole("button", { name: /Generate Summary/i })).toBeInTheDocument();
+  });
+
+  it("generate button is disabled without sessionId", () => {
+    renderMondayMorning({ plan: basePlan });
+    const btn = screen.getByRole("button", { name: /Generate Summary/i });
+    expect(btn).toBeDisabled();
   });
 });
 
