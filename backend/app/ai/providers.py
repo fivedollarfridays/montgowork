@@ -61,7 +61,7 @@ def _get_openai_client():
     if _openai_client is None:
         from openai import AsyncOpenAI
         settings = get_settings()
-        _openai_client = AsyncOpenAI(api_key=settings.openai_api_key)
+        _openai_client = AsyncOpenAI(api_key=settings.openai_api_key, base_url=settings.openai_base_url or None)
     return _openai_client
 
 
